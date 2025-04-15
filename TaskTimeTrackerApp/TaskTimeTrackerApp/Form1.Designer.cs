@@ -16,10 +16,10 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.panelSidebar = new System.Windows.Forms.Panel();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.btnReports = new System.Windows.Forms.Button();
-            this.btnTasks = new System.Windows.Forms.Button();
             this.btnProjects = new System.Windows.Forms.Button();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.btnTasks = new System.Windows.Forms.Button();
             this.btnDashboard = new System.Windows.Forms.Button();
             this.panelMainContent = new System.Windows.Forms.Panel();
             this.panelDashboard = new System.Windows.Forms.Panel();
@@ -42,8 +42,31 @@
             this.panelSidebar.Dock = System.Windows.Forms.DockStyle.Left;
             this.panelSidebar.Location = new System.Drawing.Point(0, 0);
             this.panelSidebar.Name = "panelSidebar";
-            this.panelSidebar.Size = new System.Drawing.Size(192, 450);
+            this.panelSidebar.Size = new System.Drawing.Size(192, 961);
             this.panelSidebar.TabIndex = 0;
+            this.panelSidebar.Paint += new System.Windows.Forms.PaintEventHandler(this.panelSidebar_Paint);
+            // 
+            // btnReports
+            // 
+            this.btnReports.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.btnReports.Location = new System.Drawing.Point(12, 415);
+            this.btnReports.Name = "btnReports";
+            this.btnReports.Size = new System.Drawing.Size(145, 35);
+            this.btnReports.TabIndex = 3;
+            this.btnReports.Text = "Reports";
+            this.btnReports.UseVisualStyleBackColor = true;
+            this.btnReports.Click += new System.EventHandler(this.btnReports_Click);
+            // 
+            // btnProjects
+            // 
+            this.btnProjects.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.btnProjects.Location = new System.Drawing.Point(12, 257);
+            this.btnProjects.Name = "btnProjects";
+            this.btnProjects.Size = new System.Drawing.Size(145, 33);
+            this.btnProjects.TabIndex = 1;
+            this.btnProjects.Text = "Projects";
+            this.btnProjects.UseVisualStyleBackColor = true;
+            this.btnProjects.Click += new System.EventHandler(this.btnProjects_Click);
             // 
             // pictureBox1
             // 
@@ -54,38 +77,16 @@
             this.pictureBox1.TabIndex = 4;
             this.pictureBox1.TabStop = false;
             // 
-            // btnReports
-            // 
-            this.btnReports.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.btnReports.Location = new System.Drawing.Point(12, 336);
-            this.btnReports.Name = "btnReports";
-            this.btnReports.Size = new System.Drawing.Size(145, 35);
-            this.btnReports.TabIndex = 3;
-            this.btnReports.Text = "Reports";
-            this.btnReports.UseVisualStyleBackColor = true;
-            this.btnReports.Click += new System.EventHandler(this.btnReports_Click);
-            // 
             // btnTasks
             // 
             this.btnTasks.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.btnTasks.Location = new System.Drawing.Point(12, 283);
+            this.btnTasks.Location = new System.Drawing.Point(12, 329);
             this.btnTasks.Name = "btnTasks";
             this.btnTasks.Size = new System.Drawing.Size(145, 35);
             this.btnTasks.TabIndex = 2;
             this.btnTasks.Text = "Tasks";
             this.btnTasks.UseVisualStyleBackColor = true;
             this.btnTasks.Click += new System.EventHandler(this.btnTasks_Click);
-            // 
-            // btnProjects
-            // 
-            this.btnProjects.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.btnProjects.Location = new System.Drawing.Point(12, 234);
-            this.btnProjects.Name = "btnProjects";
-            this.btnProjects.Size = new System.Drawing.Size(145, 33);
-            this.btnProjects.TabIndex = 1;
-            this.btnProjects.Text = "Projects";
-            this.btnProjects.UseVisualStyleBackColor = true;
-            this.btnProjects.Click += new System.EventHandler(this.btnProjects_Click);
             // 
             // btnDashboard
             // 
@@ -107,7 +108,7 @@
             this.panelMainContent.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelMainContent.Location = new System.Drawing.Point(192, 0);
             this.panelMainContent.Name = "panelMainContent";
-            this.panelMainContent.Size = new System.Drawing.Size(608, 450);
+            this.panelMainContent.Size = new System.Drawing.Size(792, 961);
             this.panelMainContent.TabIndex = 1;
             // 
             // panelDashboard
@@ -115,7 +116,7 @@
             this.panelDashboard.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelDashboard.Location = new System.Drawing.Point(0, 0);
             this.panelDashboard.Name = "panelDashboard";
-            this.panelDashboard.Size = new System.Drawing.Size(608, 450);
+            this.panelDashboard.Size = new System.Drawing.Size(792, 961);
             this.panelDashboard.TabIndex = 0;
             // 
             // panelProjects
@@ -123,7 +124,7 @@
             this.panelProjects.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelProjects.Location = new System.Drawing.Point(0, 0);
             this.panelProjects.Name = "panelProjects";
-            this.panelProjects.Size = new System.Drawing.Size(608, 450);
+            this.panelProjects.Size = new System.Drawing.Size(792, 961);
             this.panelProjects.TabIndex = 1;
             // 
             // panelTasks
@@ -131,7 +132,7 @@
             this.panelTasks.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelTasks.Location = new System.Drawing.Point(0, 0);
             this.panelTasks.Name = "panelTasks";
-            this.panelTasks.Size = new System.Drawing.Size(608, 450);
+            this.panelTasks.Size = new System.Drawing.Size(792, 961);
             this.panelTasks.TabIndex = 2;
             // 
             // panelReports
@@ -139,18 +140,20 @@
             this.panelReports.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelReports.Location = new System.Drawing.Point(0, 0);
             this.panelReports.Name = "panelReports";
-            this.panelReports.Size = new System.Drawing.Size(608, 450);
+            this.panelReports.Size = new System.Drawing.Size(792, 961);
             this.panelReports.TabIndex = 3;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(984, 961);
             this.Controls.Add(this.panelMainContent);
             this.Controls.Add(this.panelSidebar);
             this.Name = "Form1";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Task & Time Tracker";
+            this.Load += new System.EventHandler(this.Form1_Load);
             this.panelSidebar.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.panelMainContent.ResumeLayout(false);
