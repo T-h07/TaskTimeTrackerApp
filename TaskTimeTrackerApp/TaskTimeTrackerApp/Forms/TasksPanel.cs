@@ -3,6 +3,8 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using TaskTimeTrackerApp.Models;
+using Newtonsoft.Json;
+
 
 namespace TaskTimeTrackerApp
 {
@@ -21,7 +23,7 @@ namespace TaskTimeTrackerApp
             Label lblTitle = new Label
             {
                 Text = "All Tasks",
-                Font = new Font("Segoe UI", 16, FontStyle.Bold),
+                Font = new Font("Segoe UI", 20, FontStyle.Bold), // Bigger title
                 Location = new Point(20, 20),
                 AutoSize = true
             };
@@ -29,8 +31,9 @@ namespace TaskTimeTrackerApp
 
             txtSearch = new TextBox
             {
-                Location = new Point(20, 60),
-                Size = new Size(200, 25),
+                Location = new Point(20, 70),
+                Size = new Size(220, 32), // Larger height
+                Font = new Font("Segoe UI", 11),
                 ForeColor = Color.Gray,
                 Text = "Search tasks..."
             };
@@ -56,8 +59,9 @@ namespace TaskTimeTrackerApp
 
             cmbProjectFilter = new ComboBox
             {
-                Location = new Point(240, 60),
-                Size = new Size(200, 25),
+                Location = new Point(260, 70),
+                Size = new Size(200, 32),
+                Font = new Font("Segoe UI", 11),
                 DropDownStyle = ComboBoxStyle.DropDownList
             };
             cmbProjectFilter.Items.Add("All Projects");
@@ -68,8 +72,9 @@ namespace TaskTimeTrackerApp
 
             cmbStatusFilter = new ComboBox
             {
-                Location = new Point(460, 60),
-                Size = new Size(150, 25),
+                Location = new Point(470, 70),
+                Size = new Size(150, 32),
+                Font = new Font("Segoe UI", 11),
                 DropDownStyle = ComboBoxStyle.DropDownList
             };
             cmbStatusFilter.Items.AddRange(new[] { "All", "To Do", "In Progress", "Done" });
@@ -80,8 +85,9 @@ namespace TaskTimeTrackerApp
             btnAddTask = new Button
             {
                 Text = "➕ Add Task",
-                Location = new Point(630, 60),
-                Size = new Size(120, 25),
+                Location = new Point(640, 70),
+                Size = new Size(140, 32),
+                Font = new Font("Segoe UI", 11, FontStyle.Bold),
                 BackColor = Color.LightGreen
             };
             btnAddTask.Click += BtnAddTask_Click;
@@ -89,14 +95,15 @@ namespace TaskTimeTrackerApp
 
             panelTaskList = new Panel
             {
-                Location = new Point(20, 100),
-                Size = new Size(panelTasks.Width - 40, panelTasks.Height - 130),
+                Location = new Point(20, 120), // Pushed down to match larger controls
+                Size = new Size(panelTasks.Width - 40, panelTasks.Height - 150),
                 AutoScroll = true
             };
             panelTasks.Controls.Add(panelTaskList);
 
             RefreshTaskList();
         }
+
 
         private void RefreshTaskList()
         {

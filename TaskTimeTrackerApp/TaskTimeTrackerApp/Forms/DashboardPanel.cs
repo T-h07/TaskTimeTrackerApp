@@ -5,8 +5,8 @@ using System.Linq;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
 using TaskTimeTrackerApp.Models;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
+
 
 
 namespace TaskTimeTrackerApp
@@ -271,7 +271,7 @@ namespace TaskTimeTrackerApp
             Panel container = new Panel
             {
                 BackColor = Color.White,
-                Size = new Size(600, 200),
+                Size = new Size(600, 250),
                 Location = location,
                 BorderStyle = BorderStyle.FixedSingle,
                 AutoScroll = true
@@ -284,10 +284,37 @@ namespace TaskTimeTrackerApp
                 Location = new Point(10, 10),
                 AutoSize = true
             };
-
             container.Controls.Add(titleLabel);
 
-            int yOffset = 40;
+            // Legend
+            int legendTop = titleLabel.Bottom + 5;
+
+            void AddLegend(Color color, string labelText, int offsetX)
+            {
+                Panel colorBox = new Panel
+                {
+                    BackColor = color,
+                    Size = new Size(15, 15),
+                    Location = new Point(offsetX, legendTop)
+                };
+
+                Label label = new Label
+                {
+                    Text = labelText,
+                    Location = new Point(offsetX + 20, legendTop - 2),
+                    AutoSize = true,
+                    Font = new Font("Segoe UI", 9)
+                };
+
+                container.Controls.Add(colorBox);
+                container.Controls.Add(label);
+            }
+
+            AddLegend(Color.Green, "Completed", 10);
+            AddLegend(Color.Orange, "In Progress", 120);
+            AddLegend(Color.LightGray, "Remaining", 250);
+
+            int yOffset = legendTop + 25;
 
             foreach (var project in projects)
             {
@@ -295,9 +322,7 @@ namespace TaskTimeTrackerApp
                 if (total == 0) continue;
 
                 int done = project.Tasks.Count(t => t.Status == "Done");
-                if (done == total) continue;
-
-                int percent = (int)(((double)done / total) * 100);
+                int inProgress = project.Tasks.Count(t => t.Status == "In Progress");
 
                 Label taskLabel = new Label
                 {
@@ -305,23 +330,37 @@ namespace TaskTimeTrackerApp
                     Location = new Point(10, yOffset),
                     AutoSize = true
                 };
+                container.Controls.Add(taskLabel);
 
-                ProgressBar progress = new ProgressBar
+                Panel progressPanel = new Panel
                 {
                     Location = new Point(10, yOffset + 20),
                     Size = new Size(560, 20),
-                    Value = percent,
-                    ForeColor = Color.Green
+                    BorderStyle = BorderStyle.FixedSingle
                 };
 
-                container.Controls.Add(taskLabel);
-                container.Controls.Add(progress);
+                progressPanel.Paint += (s, e) =>
+                {
+                    Graphics g = e.Graphics;
+                    Rectangle bounds = progressPanel.ClientRectangle;
 
+                    int greenWidth = (int)(bounds.Width * ((double)done / total));
+                    int orangeWidth = (int)(bounds.Width * ((double)inProgress / total));
+                    int remainingWidth = bounds.Width - greenWidth - orangeWidth;
+
+                    g.FillRectangle(Brushes.Green, 0, 0, greenWidth, bounds.Height);
+                    g.FillRectangle(Brushes.Orange, greenWidth, 0, orangeWidth, bounds.Height);
+                    g.FillRectangle(Brushes.LightGray, greenWidth + orangeWidth, 0, remainingWidth, bounds.Height);
+                };
+
+                container.Controls.Add(progressPanel);
                 yOffset += 50;
             }
 
             parent.Controls.Add(container);
         }
+
+
     }
 }
 

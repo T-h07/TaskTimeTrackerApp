@@ -23,17 +23,21 @@
             this.btnDashboard = new System.Windows.Forms.Button();
             this.panelMainContent = new System.Windows.Forms.Panel();
             this.panelDashboard = new System.Windows.Forms.Panel();
+            this.HistoryPanel = new System.Windows.Forms.Panel();
             this.panelProjects = new System.Windows.Forms.Panel();
             this.panelTasks = new System.Windows.Forms.Panel();
             this.panelReports = new System.Windows.Forms.Panel();
+            this.btnHistory = new System.Windows.Forms.Button();
             this.panelSidebar.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.panelMainContent.SuspendLayout();
+            this.panelDashboard.SuspendLayout();
             this.SuspendLayout();
             // 
             // panelSidebar
             // 
             this.panelSidebar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(255)))));
+            this.panelSidebar.Controls.Add(this.btnHistory);
             this.panelSidebar.Controls.Add(this.btnReports);
             this.panelSidebar.Controls.Add(this.btnProjects);
             this.panelSidebar.Controls.Add(this.pictureBox1);
@@ -49,7 +53,7 @@
             // btnReports
             // 
             this.btnReports.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.btnReports.Location = new System.Drawing.Point(12, 415);
+            this.btnReports.Location = new System.Drawing.Point(22, 406);
             this.btnReports.Name = "btnReports";
             this.btnReports.Size = new System.Drawing.Size(145, 35);
             this.btnReports.TabIndex = 3;
@@ -60,7 +64,7 @@
             // btnProjects
             // 
             this.btnProjects.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.btnProjects.Location = new System.Drawing.Point(12, 257);
+            this.btnProjects.Location = new System.Drawing.Point(22, 267);
             this.btnProjects.Name = "btnProjects";
             this.btnProjects.Size = new System.Drawing.Size(145, 33);
             this.btnProjects.TabIndex = 1;
@@ -71,7 +75,7 @@
             // pictureBox1
             // 
             this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
-            this.pictureBox1.Location = new System.Drawing.Point(22, 23);
+            this.pictureBox1.Location = new System.Drawing.Point(22, 36);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(128, 110);
             this.pictureBox1.TabIndex = 4;
@@ -80,7 +84,7 @@
             // btnTasks
             // 
             this.btnTasks.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.btnTasks.Location = new System.Drawing.Point(12, 329);
+            this.btnTasks.Location = new System.Drawing.Point(22, 335);
             this.btnTasks.Name = "btnTasks";
             this.btnTasks.Size = new System.Drawing.Size(145, 35);
             this.btnTasks.TabIndex = 2;
@@ -91,7 +95,7 @@
             // btnDashboard
             // 
             this.btnDashboard.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.btnDashboard.Location = new System.Drawing.Point(12, 184);
+            this.btnDashboard.Location = new System.Drawing.Point(22, 204);
             this.btnDashboard.Name = "btnDashboard";
             this.btnDashboard.Size = new System.Drawing.Size(145, 33);
             this.btnDashboard.TabIndex = 0;
@@ -113,11 +117,20 @@
             // 
             // panelDashboard
             // 
+            this.panelDashboard.Controls.Add(this.HistoryPanel);
             this.panelDashboard.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelDashboard.Location = new System.Drawing.Point(0, 0);
             this.panelDashboard.Name = "panelDashboard";
             this.panelDashboard.Size = new System.Drawing.Size(792, 961);
             this.panelDashboard.TabIndex = 0;
+            // 
+            // HistoryPanel
+            // 
+            this.HistoryPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.HistoryPanel.Location = new System.Drawing.Point(0, 0);
+            this.HistoryPanel.Name = "HistoryPanel";
+            this.HistoryPanel.Size = new System.Drawing.Size(792, 961);
+            this.HistoryPanel.TabIndex = 0;
             // 
             // panelProjects
             // 
@@ -143,6 +156,17 @@
             this.panelReports.Size = new System.Drawing.Size(792, 961);
             this.panelReports.TabIndex = 3;
             // 
+            // btnHistory
+            // 
+            this.btnHistory.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.btnHistory.Location = new System.Drawing.Point(22, 464);
+            this.btnHistory.Name = "btnHistory";
+            this.btnHistory.Size = new System.Drawing.Size(145, 35);
+            this.btnHistory.TabIndex = 5;
+            this.btnHistory.Text = "History";
+            this.btnHistory.UseVisualStyleBackColor = true;
+            this.btnHistory.Click += new System.EventHandler(this.btnHistory_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -157,6 +181,7 @@
             this.panelSidebar.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.panelMainContent.ResumeLayout(false);
+            this.panelDashboard.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -174,5 +199,7 @@
         private System.Windows.Forms.Panel panelProjects;
         private System.Windows.Forms.Panel panelTasks;
         private System.Windows.Forms.Panel panelReports;
+        private System.Windows.Forms.Panel HistoryPanel;
+        private System.Windows.Forms.Button btnHistory;
     }
 }

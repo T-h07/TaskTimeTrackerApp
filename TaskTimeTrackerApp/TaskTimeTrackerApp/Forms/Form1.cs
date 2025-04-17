@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using Newtonsoft.Json;
 using TaskTimeTrackerApp.Models;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-
 
 namespace TaskTimeTrackerApp
 {
@@ -15,8 +14,19 @@ namespace TaskTimeTrackerApp
         private List<Project> projects = new List<Project>();
         private List<TaskItem> tasks = new List<TaskItem>();
 
+        private string dataFilePath = "data.json";
+        private readonly string dataFile = "projects.json";
+
+
+
+
+
+
         public Form1()
         {
+            // Load projects from file
+            projects = LoadProjectsFromFile();
+
             InitializeComponent();
 
             this.Size = new Size(1200, 800);
@@ -25,7 +35,9 @@ namespace TaskTimeTrackerApp
             this.MaximizeBox = false;
             this.Text = "Task & Time Tracker";
 
+
             this.Load += Form1_Load;
+            this.FormClosing += (s, e) => SaveProjectsToFile();
 
             ShowPanel(panelDashboard);
             AddLabelsToPanels();
@@ -40,8 +52,38 @@ namespace TaskTimeTrackerApp
             CreateMotivationAndDeadlines(panelDashboard, new Point(650, 460));
             CreateProgressTracker(panelDashboard, new Point(30, 420));
 
-            LoadSampleData();
             UpdateDashboard();
+        }
+
+        private void SaveProjectsToFile()
+        {
+            try
+            {
+                var json = JsonConvert.SerializeObject(projects, Formatting.Indented);
+                File.WriteAllText(dataFilePath, json);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error saving data: " + ex.Message);
+            }
+        }
+
+        private List<Project> LoadProjectsFromFile()
+        {
+            try
+            {
+                if (File.Exists(dataFilePath))
+                {
+                    string json = File.ReadAllText(dataFilePath);
+                    return JsonConvert.DeserializeObject<List<Project>>(json) ?? new List<Project>();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading data: " + ex.Message);
+            }
+
+            return new List<Project>();
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -59,10 +101,12 @@ namespace TaskTimeTrackerApp
             panelProjects.Visible = false;
             panelTasks.Visible = false;
             panelReports.Visible = false;
+            HistoryPanel.Visible = false;
 
             panel.Visible = true;
             panel.BringToFront();
         }
+
 
         private void btnDashboard_Click(object sender, EventArgs e)
         {
@@ -88,12 +132,20 @@ namespace TaskTimeTrackerApp
             SetupReportsPanel();
         }
 
+        private void btnHistory_Click(object sender, EventArgs e)
+        {
+            ShowPanel(HistoryPanel);
+            SetupHistoryPanel();
+        }
+
+
         private void AddLabelsToPanels()
         {
             AddHeaderLabel(panelDashboard, "Dashboard");
             AddHeaderLabel(panelProjects, "Projects");
             AddHeaderLabel(panelTasks, "Tasks");
             AddHeaderLabel(panelReports, "Reports");
+            AddHeaderLabel(HistoryPanel, "History");
         }
 
         private void AddHeaderLabel(Panel panel, string text)
@@ -109,18 +161,8 @@ namespace TaskTimeTrackerApp
             panel.Controls.Add(lbl);
         }
 
-        private void LoadSampleData()
-        {
-            projects.Add(new Project { Name = "App UI" });
-            projects.Add(new Project { Name = "Backend" });
-
-            tasks.Add(new TaskItem { Title = "Design dashboard", Status = "In Progress" });
-            tasks.Add(new TaskItem { Title = "Add login page", Status = "To Do" });
-            tasks.Add(new TaskItem { Title = "Database setup", Status = "In Progress" });
-            tasks.Add(new TaskItem { Title = "Fix bug #404", Status = "Done" });
-            tasks.Add(new TaskItem { Title = "Write docs", Status = "Done" });
-        }
 
         private void panelSidebar_Paint(object sender, PaintEventArgs e) { }
+
     }
 }

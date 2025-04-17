@@ -4,8 +4,8 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using TaskTimeTrackerApp.Models;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
+
 
 
 namespace TaskTimeTrackerApp
@@ -174,7 +174,7 @@ namespace TaskTimeTrackerApp
                 Button btnRemoveProject = new Button
                 {
                     Text = "Remove",
-                    Location = new Point(340, 35),
+                    Location = new Point(460, 35), // 💡 Moved right to avoid overlap
                     Size = new Size(80, 25),
                     BackColor = Color.LightCoral
                 };
@@ -195,6 +195,33 @@ namespace TaskTimeTrackerApp
                         UpdateDashboard();
                     }
                 };
+
+
+
+
+                bool allTasksDone = project.Tasks.Count > 0 && project.Tasks.All(t => t.Status == "Done");
+
+                Button btnMarkAsDone = new Button
+                {
+                    Text = "Mark as Done",
+                    Size = new Size(110, 30),
+                    Location = new Point(card.Width - 130, card.Height - 45),
+                    BackColor = Color.MediumSeaGreen,
+                    ForeColor = Color.White,
+                    FlatStyle = FlatStyle.Flat,
+                    Enabled = allTasksDone // <-- ✅ Enable only if all are done
+                };
+                btnMarkAsDone.FlatAppearance.BorderSize = 0;
+
+                btnMarkAsDone.Click += (s, e) =>
+                {
+                    MessageBox.Show("✅ This project is fully completed!", "Done", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                };
+
+                
+
+
+
 
                 Panel taskContainer = new Panel
                 {
@@ -235,13 +262,22 @@ namespace TaskTimeTrackerApp
                     {
                         task.Status = cmbStatus.SelectedItem.ToString();
                         UpdateDashboard();
+
+                        // 🔁 Re-check task statuses and enable Mark as Done button if needed
+                        bool allDone = project.Tasks.Count > 0 && project.Tasks.All(t => t.Status == "Done");
+                        btnMarkAsDone.Enabled = allDone;
                     };
+
+
+
+
+
 
                     Button btnRemoveTask = new Button
                     {
                         Text = "🗑",
-                        Size = new Size(30, 25),
-                        Location = new Point(300, taskYOffset),
+                        Location = new Point(300, taskYOffset), // ✅ aligns right next to the status ComboBox
+                        Size = new Size(80, 25),
                         BackColor = Color.LightCoral,
                         FlatStyle = FlatStyle.Flat
                     };
@@ -260,6 +296,30 @@ namespace TaskTimeTrackerApp
 
                     taskYOffset += 50;
                 }
+                Color priorityColor;
+
+                if (project.Priority == PriorityLevel.High)
+                    priorityColor = Color.Red;
+                else if (project.Priority == PriorityLevel.Medium)
+                    priorityColor = Color.Orange;
+                else if (project.Priority == PriorityLevel.Low)
+                    priorityColor = Color.SeaGreen;
+                else
+                    priorityColor = Color.Gray;
+
+                Label lblPriorityBox = new Label
+                {
+                    Text = $"Priority: {project.Priority}",
+                    Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                    ForeColor = Color.White,
+                    BackColor = priorityColor,
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    AutoSize = false,
+                    Size = new Size(110, 25),
+                    Location = new Point(340, 35), // Moved 20px left
+                    BorderStyle = BorderStyle.FixedSingle,
+                    Padding = new Padding(2)
+                };
 
                 card.Controls.Add(lblTitle);
                 card.Controls.Add(lblTimer);
@@ -267,7 +327,13 @@ namespace TaskTimeTrackerApp
                 card.Controls.Add(lblDeadline);
                 card.Controls.Add(btnStartStop);
                 card.Controls.Add(btnAddTask);
+                card.Controls.Add(lblPriorityBox);
                 card.Controls.Add(btnRemoveProject);
+                card.Controls.Add(btnMarkAsDone);
+
+
+
+
                 card.Controls.Add(taskContainer);
 
                 panelProjectsList.Controls.Add(card);
@@ -285,12 +351,16 @@ namespace TaskTimeTrackerApp
                     {
                         Name = dialog.ProjectName,
                         Description = dialog.ProjectDescription,
-                        Deadline = dialog.SelectedDeadline
+                        Deadline = dialog.SelectedDeadline,
+                        Priority = dialog.SelectedPriority
                     });
+                    SaveProjectsToFile(); // ✅ Save on new project
                     SetupProjectsPanel();
                     UpdateDashboard();
                 }
             }
         }
+
+
     }
 }

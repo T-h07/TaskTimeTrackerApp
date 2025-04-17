@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
+using TaskTimeTrackerApp.Models;
 
 namespace TaskTimeTrackerApp
 {
@@ -9,15 +10,20 @@ namespace TaskTimeTrackerApp
         public string ProjectName => txtName.Text;
         public string ProjectDescription => txtDescription.Text;
         public DateTime SelectedDeadline => dtDeadline.Value;
+        public PriorityLevel SelectedPriority =>
+            Enum.TryParse<PriorityLevel>(cmbPriority.SelectedItem?.ToString(), out var result)
+                ? result
+                : PriorityLevel.Medium;
 
         private TextBox txtName;
         private TextBox txtDescription;
         private DateTimePicker dtDeadline;
+        private ComboBox cmbPriority;
 
         public ProjectDialog()
         {
             this.Text = "New Project";
-            this.Size = new Size(400, 300);
+            this.Size = new Size(400, 330);
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
@@ -37,8 +43,18 @@ namespace TaskTimeTrackerApp
                 Format = DateTimePickerFormat.Short
             };
 
-            Button btnOK = new Button { Text = "OK", Location = new Point(200, 180), DialogResult = DialogResult.OK };
-            Button btnCancel = new Button { Text = "Cancel", Location = new Point(290, 180), DialogResult = DialogResult.Cancel };
+            Label lblPriority = new Label { Text = "Priority:", Location = new Point(10, 170), AutoSize = true };
+            cmbPriority = new ComboBox
+            {
+                Location = new Point(120, 165),
+                Size = new Size(240, 25),
+                DropDownStyle = ComboBoxStyle.DropDownList
+            };
+            cmbPriority.Items.AddRange(Enum.GetNames(typeof(PriorityLevel)));
+            cmbPriority.SelectedItem = PriorityLevel.Medium.ToString(); // Default
+
+            Button btnOK = new Button { Text = "OK", Location = new Point(200, 220), DialogResult = DialogResult.OK };
+            Button btnCancel = new Button { Text = "Cancel", Location = new Point(290, 220), DialogResult = DialogResult.Cancel };
 
             this.AcceptButton = btnOK;
             this.CancelButton = btnCancel;
@@ -49,8 +65,14 @@ namespace TaskTimeTrackerApp
             this.Controls.Add(txtDescription);
             this.Controls.Add(lblDeadline);
             this.Controls.Add(dtDeadline);
+            this.Controls.Add(lblPriority);
+            this.Controls.Add(cmbPriority);
             this.Controls.Add(btnOK);
             this.Controls.Add(btnCancel);
+        }
+
+        private void ProjectDialog_Load(object sender, EventArgs e)
+        {
         }
     }
 }
