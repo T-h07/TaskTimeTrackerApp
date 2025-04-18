@@ -16,6 +16,7 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.panelSidebar = new System.Windows.Forms.Panel();
+            this.btnHistory = new System.Windows.Forms.Button();
             this.btnReports = new System.Windows.Forms.Button();
             this.btnProjects = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
@@ -23,16 +24,16 @@
             this.btnDashboard = new System.Windows.Forms.Button();
             this.panelMainContent = new System.Windows.Forms.Panel();
             this.panelDashboard = new System.Windows.Forms.Panel();
-            this.HistoryPanel = new System.Windows.Forms.Panel();
             this.panelProjects = new System.Windows.Forms.Panel();
             this.panelTasks = new System.Windows.Forms.Panel();
             this.panelReports = new System.Windows.Forms.Panel();
-            this.btnHistory = new System.Windows.Forms.Button();
+            this.HistoryPanel = new System.Windows.Forms.Panel();
+
             this.panelSidebar.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.panelMainContent.SuspendLayout();
-            this.panelDashboard.SuspendLayout();
             this.SuspendLayout();
+
             // 
             // panelSidebar
             // 
@@ -48,113 +49,7 @@
             this.panelSidebar.Name = "panelSidebar";
             this.panelSidebar.Size = new System.Drawing.Size(192, 961);
             this.panelSidebar.TabIndex = 0;
-            this.panelSidebar.Paint += new System.Windows.Forms.PaintEventHandler(this.panelSidebar_Paint);
-            // 
-            // btnReports
-            // 
-            this.btnReports.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.btnReports.Location = new System.Drawing.Point(22, 406);
-            this.btnReports.Name = "btnReports";
-            this.btnReports.Size = new System.Drawing.Size(145, 35);
-            this.btnReports.TabIndex = 3;
-            this.btnReports.Text = "Reports";
-            this.btnReports.UseVisualStyleBackColor = true;
-            this.btnReports.Click += new System.EventHandler(this.btnReports_Click);
-            // 
-            // btnProjects
-            // 
-            this.btnProjects.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.btnProjects.Location = new System.Drawing.Point(22, 267);
-            this.btnProjects.Name = "btnProjects";
-            this.btnProjects.Size = new System.Drawing.Size(145, 33);
-            this.btnProjects.TabIndex = 1;
-            this.btnProjects.Text = "Projects";
-            this.btnProjects.UseVisualStyleBackColor = true;
-            this.btnProjects.Click += new System.EventHandler(this.btnProjects_Click);
-            // 
-            // pictureBox1
-            // 
-            this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
-            this.pictureBox1.Location = new System.Drawing.Point(22, 36);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(128, 110);
-            this.pictureBox1.TabIndex = 4;
-            this.pictureBox1.TabStop = false;
-            // 
-            // btnTasks
-            // 
-            this.btnTasks.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.btnTasks.Location = new System.Drawing.Point(22, 335);
-            this.btnTasks.Name = "btnTasks";
-            this.btnTasks.Size = new System.Drawing.Size(145, 35);
-            this.btnTasks.TabIndex = 2;
-            this.btnTasks.Text = "Tasks";
-            this.btnTasks.UseVisualStyleBackColor = true;
-            this.btnTasks.Click += new System.EventHandler(this.btnTasks_Click);
-            // 
-            // btnDashboard
-            // 
-            this.btnDashboard.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.btnDashboard.Location = new System.Drawing.Point(22, 204);
-            this.btnDashboard.Name = "btnDashboard";
-            this.btnDashboard.Size = new System.Drawing.Size(145, 33);
-            this.btnDashboard.TabIndex = 0;
-            this.btnDashboard.Text = "Dashboard";
-            this.btnDashboard.UseVisualStyleBackColor = true;
-            this.btnDashboard.Click += new System.EventHandler(this.btnDashboard_Click);
-            // 
-            // panelMainContent
-            // 
-            this.panelMainContent.Controls.Add(this.panelDashboard);
-            this.panelMainContent.Controls.Add(this.panelProjects);
-            this.panelMainContent.Controls.Add(this.panelTasks);
-            this.panelMainContent.Controls.Add(this.panelReports);
-            this.panelMainContent.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panelMainContent.Location = new System.Drawing.Point(192, 0);
-            this.panelMainContent.Name = "panelMainContent";
-            this.panelMainContent.Size = new System.Drawing.Size(792, 961);
-            this.panelMainContent.TabIndex = 1;
-            // 
-            // panelDashboard
-            // 
-            this.panelDashboard.Controls.Add(this.HistoryPanel);
-            this.panelDashboard.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panelDashboard.Location = new System.Drawing.Point(0, 0);
-            this.panelDashboard.Name = "panelDashboard";
-            this.panelDashboard.Size = new System.Drawing.Size(792, 961);
-            this.panelDashboard.TabIndex = 0;
-            // 
-            // HistoryPanel
-            // 
-            this.HistoryPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.HistoryPanel.Location = new System.Drawing.Point(0, 0);
-            this.HistoryPanel.Name = "HistoryPanel";
-            this.HistoryPanel.Size = new System.Drawing.Size(792, 961);
-            this.HistoryPanel.TabIndex = 0;
-            // 
-            // panelProjects
-            // 
-            this.panelProjects.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panelProjects.Location = new System.Drawing.Point(0, 0);
-            this.panelProjects.Name = "panelProjects";
-            this.panelProjects.Size = new System.Drawing.Size(792, 961);
-            this.panelProjects.TabIndex = 1;
-            // 
-            // panelTasks
-            // 
-            this.panelTasks.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panelTasks.Location = new System.Drawing.Point(0, 0);
-            this.panelTasks.Name = "panelTasks";
-            this.panelTasks.Size = new System.Drawing.Size(792, 961);
-            this.panelTasks.TabIndex = 2;
-            // 
-            // panelReports
-            // 
-            this.panelReports.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panelReports.Location = new System.Drawing.Point(0, 0);
-            this.panelReports.Name = "panelReports";
-            this.panelReports.Size = new System.Drawing.Size(792, 961);
-            this.panelReports.TabIndex = 3;
+
             // 
             // btnHistory
             // 
@@ -166,6 +61,124 @@
             this.btnHistory.Text = "History";
             this.btnHistory.UseVisualStyleBackColor = true;
             this.btnHistory.Click += new System.EventHandler(this.btnHistory_Click);
+
+            // 
+            // btnReports
+            // 
+            this.btnReports.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.btnReports.Location = new System.Drawing.Point(22, 406);
+            this.btnReports.Name = "btnReports";
+            this.btnReports.Size = new System.Drawing.Size(145, 35);
+            this.btnReports.TabIndex = 3;
+            this.btnReports.Text = "Reports";
+            this.btnReports.UseVisualStyleBackColor = true;
+            this.btnReports.Click += new System.EventHandler(this.btnReports_Click);
+
+            // 
+            // btnProjects
+            // 
+            this.btnProjects.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.btnProjects.Location = new System.Drawing.Point(22, 267);
+            this.btnProjects.Name = "btnProjects";
+            this.btnProjects.Size = new System.Drawing.Size(145, 33);
+            this.btnProjects.TabIndex = 1;
+            this.btnProjects.Text = "Projects";
+            this.btnProjects.UseVisualStyleBackColor = true;
+            this.btnProjects.Click += new System.EventHandler(this.btnProjects_Click);
+
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
+            this.pictureBox1.Location = new System.Drawing.Point(22, 36);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(128, 110);
+            this.pictureBox1.TabIndex = 4;
+            this.pictureBox1.TabStop = false;
+
+            // 
+            // btnTasks
+            // 
+            this.btnTasks.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.btnTasks.Location = new System.Drawing.Point(22, 335);
+            this.btnTasks.Name = "btnTasks";
+            this.btnTasks.Size = new System.Drawing.Size(145, 35);
+            this.btnTasks.TabIndex = 2;
+            this.btnTasks.Text = "Tasks";
+            this.btnTasks.UseVisualStyleBackColor = true;
+            this.btnTasks.Click += new System.EventHandler(this.btnTasks_Click);
+
+            // 
+            // btnDashboard
+            // 
+            this.btnDashboard.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.btnDashboard.Location = new System.Drawing.Point(22, 204);
+            this.btnDashboard.Name = "btnDashboard";
+            this.btnDashboard.Size = new System.Drawing.Size(145, 33);
+            this.btnDashboard.TabIndex = 0;
+            this.btnDashboard.Text = "Dashboard";
+            this.btnDashboard.UseVisualStyleBackColor = true;
+            this.btnDashboard.Click += new System.EventHandler(this.btnDashboard_Click);
+
+            // 
+            // panelMainContent
+            // 
+            this.panelMainContent.Controls.Add(this.panelDashboard);
+            this.panelMainContent.Controls.Add(this.panelProjects);
+            this.panelMainContent.Controls.Add(this.panelTasks);
+            this.panelMainContent.Controls.Add(this.panelReports);
+            this.panelMainContent.Controls.Add(this.HistoryPanel); // ✅ FIX: HistoryPanel is now a sibling panel
+            this.panelMainContent.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panelMainContent.Location = new System.Drawing.Point(192, 0);
+            this.panelMainContent.Name = "panelMainContent";
+            this.panelMainContent.Size = new System.Drawing.Size(792, 961);
+            this.panelMainContent.TabIndex = 1;
+
+            // 
+            // panelDashboard
+            // 
+            this.panelDashboard.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panelDashboard.Location = new System.Drawing.Point(0, 0);
+            this.panelDashboard.Name = "panelDashboard";
+            this.panelDashboard.Size = new System.Drawing.Size(792, 961);
+            this.panelDashboard.TabIndex = 0;
+
+            // 
+            // panelProjects
+            // 
+            this.panelProjects.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panelProjects.Location = new System.Drawing.Point(0, 0);
+            this.panelProjects.Name = "panelProjects";
+            this.panelProjects.Size = new System.Drawing.Size(792, 961);
+            this.panelProjects.TabIndex = 1;
+
+            // 
+            // panelTasks
+            // 
+            this.panelTasks.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panelTasks.Location = new System.Drawing.Point(0, 0);
+            this.panelTasks.Name = "panelTasks";
+            this.panelTasks.Size = new System.Drawing.Size(792, 961);
+            this.panelTasks.TabIndex = 2;
+
+            // 
+            // panelReports
+            // 
+            this.panelReports.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panelReports.Location = new System.Drawing.Point(0, 0);
+            this.panelReports.Name = "panelReports";
+            this.panelReports.Size = new System.Drawing.Size(792, 961);
+            this.panelReports.TabIndex = 3;
+
+            // 
+            // HistoryPanel
+            // 
+            this.HistoryPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.HistoryPanel.Location = new System.Drawing.Point(0, 0);
+            this.HistoryPanel.Name = "HistoryPanel";
+            this.HistoryPanel.Size = new System.Drawing.Size(792, 961);
+            this.HistoryPanel.TabIndex = 4;
+
             // 
             // Form1
             // 
@@ -181,9 +194,7 @@
             this.panelSidebar.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.panelMainContent.ResumeLayout(false);
-            this.panelDashboard.ResumeLayout(false);
             this.ResumeLayout(false);
-
         }
 
         #endregion

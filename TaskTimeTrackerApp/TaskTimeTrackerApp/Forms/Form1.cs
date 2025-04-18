@@ -29,7 +29,7 @@ namespace TaskTimeTrackerApp
 
             InitializeComponent();
 
-            this.Size = new Size(1200, 800);
+            this.Size = new Size(1200, 1000);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
@@ -135,8 +135,10 @@ namespace TaskTimeTrackerApp
         private void btnHistory_Click(object sender, EventArgs e)
         {
             ShowPanel(HistoryPanel);
-            SetupHistoryPanel();
+            SetupHistoryPanel(); // ✅ show real history
         }
+
+
 
 
         private void AddLabelsToPanels()

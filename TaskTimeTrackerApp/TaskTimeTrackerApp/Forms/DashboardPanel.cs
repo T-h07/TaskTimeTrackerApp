@@ -316,7 +316,7 @@ namespace TaskTimeTrackerApp
 
             int yOffset = legendTop + 25;
 
-            foreach (var project in projects)
+            foreach (var project in projects.Where(p => p.Tasks.Any(t => t.Status != "Done")))
             {
                 int total = project.Tasks.Count;
                 if (total == 0) continue;
@@ -356,6 +356,7 @@ namespace TaskTimeTrackerApp
                 container.Controls.Add(progressPanel);
                 yOffset += 50;
             }
+
 
             parent.Controls.Add(container);
         }

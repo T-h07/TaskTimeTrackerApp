@@ -57,7 +57,7 @@ namespace TaskTimeTrackerApp
             int cardWidth = 600;
             int yOffset = 0;
 
-            foreach (var project in projects)
+            foreach (var project in projects.Where(p => !p.IsCompleted))
             {
                 int baseHeight = 280;
 
@@ -209,16 +209,26 @@ namespace TaskTimeTrackerApp
                     BackColor = Color.MediumSeaGreen,
                     ForeColor = Color.White,
                     FlatStyle = FlatStyle.Flat,
-                    Enabled = allTasksDone // <-- ✅ Enable only if all are done
+                    Enabled = allTasksDone
                 };
                 btnMarkAsDone.FlatAppearance.BorderSize = 0;
 
                 btnMarkAsDone.Click += (s, e) =>
                 {
-                    MessageBox.Show("✅ This project is fully completed!", "Done", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    var confirm = MessageBox.Show($"Mark '{project.Name}' as completed?", "Confirm Completion", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                    if (confirm == DialogResult.Yes)
+                    {
+                        project.IsCompleted = true;       // ✅ mark the project done
+                        SaveProjectsToFile();             // ✅ save changes
+                        LoadProjectsIntoPanel();          // ✅ remove from Projects panel
+                        UpdateDashboard();                // ✅ update summary stats
+
+                        MessageBox.Show("✅ This project has been moved to the History panel.", "Marked as Done", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
                 };
 
-                
+
+
 
 
 
@@ -357,6 +367,7 @@ namespace TaskTimeTrackerApp
                     SaveProjectsToFile(); // ✅ Save on new project
                     SetupProjectsPanel();
                     UpdateDashboard();
+                    
                 }
             }
         }

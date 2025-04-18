@@ -22,6 +22,9 @@ namespace TaskTimeTrackerApp.Models
         public PriorityLevel Priority { get; set; } = PriorityLevel.Medium;
         public string Status { get; set; } = "In Progress";
 
+        public bool IsCompleted { get; set; } = false;
+
+
 
     }
 }
