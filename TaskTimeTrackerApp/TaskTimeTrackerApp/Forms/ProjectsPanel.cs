@@ -6,8 +6,6 @@ using System.Windows.Forms;
 using TaskTimeTrackerApp.Models;
 using Newtonsoft.Json;
 
-
-
 namespace TaskTimeTrackerApp
 {
     public partial class Form1 : Form
@@ -65,7 +63,7 @@ namespace TaskTimeTrackerApp
                 {
                     Size = new Size(cardWidth, baseHeight),
                     Location = new Point(0, yOffset),
-                    BackColor = Color.White,
+                    BackColor = project.Deadline.HasValue && project.Deadline < DateTime.Now ? Color.MistyRose : Color.White, // Highlight overdue
                     BorderStyle = BorderStyle.FixedSingle
                 };
 
@@ -112,40 +110,53 @@ namespace TaskTimeTrackerApp
 
                 btnStartStop.Click += (s, e) =>
                 {
-                    if (!projectTimers.ContainsKey(project))
-                    {
-                        projectTimers[project] = new Timer { Interval = 1000 };
-                        projectTimers[project].Tick += (sender, args) =>
-                        {
-                            if (project.IsTracking && project.StartTime.HasValue)
-                            {
-                                project.TimeTracked = DateTime.Now - project.StartTime.Value;
-                                if (projectTimerLabels.ContainsKey(project))
-                                {
-                                    projectTimerLabels[project].Text = $"Time: {project.TimeTracked:hh\\:mm\\:ss}";
-                                }
-                                UpdateDashboard();
-                            }
-                        };
-                    }
-
                     if (project.IsTracking)
                     {
-                        project.IsTracking = false;
+                        // STOP
                         if (project.StartTime.HasValue)
-                            project.TimeTracked = DateTime.Now - project.StartTime.Value;
+                        {
+                            project.TimeTracked += DateTime.Now - project.StartTime.Value;
+                        }
+                        project.IsTracking = false;
                         project.StartTime = null;
-                        projectTimers[project].Stop();
+                        if (projectTimers.ContainsKey(project))
+                            projectTimers[project].Stop();
+
+                        projectTimerLabels[project].Text = $"Time: {project.TimeTracked:hh\\:mm\\:ss}";
+                        btnStartStop.Text = "Start"; // <-- Update button text immediately
                     }
                     else
                     {
+                        // START
                         project.IsTracking = true;
-                        project.StartTime = DateTime.Now - project.TimeTracked;
+                        project.StartTime = DateTime.Now;
+
+                        if (!projectTimers.ContainsKey(project))
+                        {
+                            projectTimers[project] = new Timer { Interval = 1000 };
+                            projectTimers[project].Tick += (sender, args) =>
+                            {
+                                if (project.IsTracking && project.StartTime.HasValue)
+                                {
+                                    var liveTime = project.TimeTracked + (DateTime.Now - project.StartTime.Value);
+                                    projectTimerLabels[project].Text = $"Time: {liveTime:hh\\:mm\\:ss}";
+                                    UpdateDashboard();
+                                }
+                            };
+                        }
                         projectTimers[project].Start();
+
+                        projectTimerLabels[project].Text = $"Time: {project.TimeTracked:hh\\:mm\\:ss}";
+                        btnStartStop.Text = "Stop"; // <-- Update button text immediately
                     }
 
-                    LoadProjectsIntoPanel();
+                    SaveProjectsToFile();
+                    UpdateDashboard();
                 };
+
+
+
+
 
                 Button btnAddTask = new Button
                 {
@@ -158,12 +169,18 @@ namespace TaskTimeTrackerApp
                 {
                     using (var inputDialog = new InputDialog("New Task", $"Enter task title for {project.Name}:"))
                     {
-                        if (inputDialog.ShowDialog() == DialogResult.OK && !string.IsNullOrWhiteSpace(inputDialog.UserInput))
+                        if (inputDialog.ShowDialog() == DialogResult.OK)
                         {
+                            string taskName = inputDialog.UserInput?.Trim();
+                            if (string.IsNullOrWhiteSpace(taskName))
+                            {
+                                MessageBox.Show("Task name cannot be empty.", "Invalid Task", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                return;
+                            }
                             project.Tasks.Add(new TaskItem
                             {
-                                Title = inputDialog.UserInput,
-                                Description = inputDialog.DescriptionInput
+                                Title = taskName,
+                                Description = inputDialog.DescriptionInput?.Trim()
                             });
                             LoadProjectsIntoPanel();
                             UpdateDashboard();
@@ -174,14 +191,14 @@ namespace TaskTimeTrackerApp
                 Button btnRemoveProject = new Button
                 {
                     Text = "Remove",
-                    Location = new Point(460, 35), // 💡 Moved right to avoid overlap
+                    Location = new Point(460, 35),
                     Size = new Size(80, 25),
                     BackColor = Color.LightCoral
                 };
 
                 btnRemoveProject.Click += (s, e) =>
                 {
-                    var result = MessageBox.Show($"Are you sure you want to delete '{project.Name}'?", "Confirm Deletion", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                    var result = MessageBox.Show($"Are you sure you want to delete '{project.Name}'? This will remove all its tasks.", "Confirm Deletion", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
                     if (result == DialogResult.Yes)
                     {
                         if (projectTimers.ContainsKey(project))
@@ -195,9 +212,6 @@ namespace TaskTimeTrackerApp
                         UpdateDashboard();
                     }
                 };
-
-
-
 
                 bool allTasksDone = project.Tasks.Count > 0 && project.Tasks.All(t => t.Status == "Done");
 
@@ -218,19 +232,14 @@ namespace TaskTimeTrackerApp
                     var confirm = MessageBox.Show($"Mark '{project.Name}' as completed?", "Confirm Completion", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                     if (confirm == DialogResult.Yes)
                     {
-                        project.IsCompleted = true;       // ✅ mark the project done
-                        SaveProjectsToFile();             // ✅ save changes
-                        LoadProjectsIntoPanel();          // ✅ remove from Projects panel
-                        UpdateDashboard();                // ✅ update summary stats
-
+                        project.IsCompleted = true;
+                        SaveProjectsToFile();
+                        LoadProjectsIntoPanel();
+                        UpdateDashboard();
+                        ShowPanel(panelDashboard); // Force refresh dashboard
                         MessageBox.Show("✅ This project has been moved to the History panel.", "Marked as Done", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                 };
-
-
-
-
-
 
 
                 Panel taskContainer = new Panel
@@ -272,21 +281,14 @@ namespace TaskTimeTrackerApp
                     {
                         task.Status = cmbStatus.SelectedItem.ToString();
                         UpdateDashboard();
-
-                        // 🔁 Re-check task statuses and enable Mark as Done button if needed
                         bool allDone = project.Tasks.Count > 0 && project.Tasks.All(t => t.Status == "Done");
                         btnMarkAsDone.Enabled = allDone;
                     };
 
-
-
-
-
-
                     Button btnRemoveTask = new Button
                     {
                         Text = "🗑",
-                        Location = new Point(300, taskYOffset), // ✅ aligns right next to the status ComboBox
+                        Location = new Point(300, taskYOffset),
                         Size = new Size(80, 25),
                         BackColor = Color.LightCoral,
                         FlatStyle = FlatStyle.Flat
@@ -294,9 +296,13 @@ namespace TaskTimeTrackerApp
                     btnRemoveTask.FlatAppearance.BorderSize = 0;
                     btnRemoveTask.Click += (s, e) =>
                     {
-                        project.Tasks.Remove(task);
-                        LoadProjectsIntoPanel();
-                        UpdateDashboard();
+                        var confirm = MessageBox.Show("Delete this task?", "Confirm Deletion", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                        if (confirm == DialogResult.Yes)
+                        {
+                            project.Tasks.Remove(task);
+                            LoadProjectsIntoPanel();
+                            UpdateDashboard();
+                        }
                     };
 
                     taskContainer.Controls.Add(lblTaskTitle);
@@ -306,8 +312,8 @@ namespace TaskTimeTrackerApp
 
                     taskYOffset += 50;
                 }
-                Color priorityColor;
 
+                Color priorityColor;
                 if (project.Priority == PriorityLevel.High)
                     priorityColor = Color.Red;
                 else if (project.Priority == PriorityLevel.Medium)
@@ -326,7 +332,7 @@ namespace TaskTimeTrackerApp
                     TextAlign = ContentAlignment.MiddleCenter,
                     AutoSize = false,
                     Size = new Size(110, 25),
-                    Location = new Point(340, 35), // Moved 20px left
+                    Location = new Point(340, 35),
                     BorderStyle = BorderStyle.FixedSingle,
                     Padding = new Padding(2)
                 };
@@ -340,10 +346,6 @@ namespace TaskTimeTrackerApp
                 card.Controls.Add(lblPriorityBox);
                 card.Controls.Add(btnRemoveProject);
                 card.Controls.Add(btnMarkAsDone);
-
-
-
-
                 card.Controls.Add(taskContainer);
 
                 panelProjectsList.Controls.Add(card);
@@ -355,23 +357,38 @@ namespace TaskTimeTrackerApp
         {
             using (var dialog = new ProjectDialog())
             {
-                if (dialog.ShowDialog() == DialogResult.OK && !string.IsNullOrWhiteSpace(dialog.ProjectName))
+                if (dialog.ShowDialog() == DialogResult.OK)
                 {
+                    string projectName = dialog.ProjectName?.Trim();
+                    if (string.IsNullOrWhiteSpace(projectName))
+                    {
+                        MessageBox.Show("Project name cannot be empty.", "Invalid Project", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+                    if (projects.Any(p => p.Name.Equals(projectName, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        MessageBox.Show("A project with this name already exists. Choose another name.", "Duplicate Project", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+                    if (dialog.SelectedDeadline < DateTime.Now.Date)
+                    {
+                        MessageBox.Show("Deadline cannot be in the past.", "Invalid Deadline", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+
                     projects.Add(new Project
                     {
-                        Name = dialog.ProjectName,
-                        Description = dialog.ProjectDescription,
+                        Name = projectName,
+                        Description = dialog.ProjectDescription?.Trim(),
                         Deadline = dialog.SelectedDeadline,
                         Priority = dialog.SelectedPriority
                     });
-                    SaveProjectsToFile(); // ✅ Save on new project
+                    SaveProjectsToFile();
                     SetupProjectsPanel();
                     UpdateDashboard();
-                    
+                    MessageBox.Show("Project created successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
         }
-
-
     }
 }

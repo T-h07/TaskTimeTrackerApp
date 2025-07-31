@@ -33,37 +33,105 @@ namespace TaskTimeTrackerApp
 
         private void UpdateDashboard()
         {
+            // Update label values
             lblTotalProjects.Text = projects.Count.ToString();
             lblTotalTasks.Text = projects.Sum(p => p.Tasks.Count).ToString();
             lblTasksInProgress.Text = projects.Sum(p => p.Tasks.Count(t => t.Status == "In Progress")).ToString();
-            lblTimeToday.Text = $"{projects.Sum(p => p.TimeTracked.TotalHours):0}h {projects.Sum(p => p.TimeTracked.Minutes):00}m";
+            lblTimeToday.Text = $"{(int)projects.Sum(p => p.TimeTracked.TotalHours)}h {projects.Sum(p => p.TimeTracked.Minutes):00}m";
 
-            // Clear and re-add Motivation
-            panelDashboard.Controls.OfType<Panel>()
-                .Where(p => p.Controls.OfType<Label>().Any(l => l.Text.StartsWith("Motivational Quote")))
-                .ToList()
-                .ForEach(p => panelDashboard.Controls.Remove(p));
-            CreateMotivationAndDeadlines(panelDashboard, new Point(650, 460));
+            // === Update Deadlines & Motivation Text (no recreation) ===
+            UpdateDeadlinesLabel(); // This just changes the text inside the existing label
+            if (lblMotivationalQuote != null)
+            {
+                lblMotivationalQuote.Text = "Motivational Quote:\n" + motivationalQuotes[currentQuoteIndex];
+            }
 
-            // Clear and re-add Recent Tasks
-            panelDashboard.Controls.OfType<Panel>()
-                .Where(p => p.Controls.OfType<Label>().Any(l => l.Text == "Recent Tasks"))
-                .ToList()
-                .ForEach(p => panelDashboard.Controls.Remove(p));
-            CreateRecentTasksBox(panelDashboard, new Point(30, 240));
+            // === Update Recent Tasks List ===
+            var listBox = panelDashboard.Controls
+                .OfType<Panel>()
+                .FirstOrDefault(p => p.Controls.OfType<Label>().Any(l => l.Text == "Recent Tasks"))
+                ?.Controls.OfType<ListBox>().FirstOrDefault();
+            if (listBox != null)
+            {
+                listBox.Items.Clear();
+                var recent = projects
+                    .SelectMany(p => p.Tasks.Select(t => new { Project = p.Name, Task = t }))
+                    .Where(x => x.Task.Status != "Done")
+                    .OrderByDescending(x => x.Task.Title)
+                    .Take(5)
+                    .Select(x => $"{x.Task.Title} [{x.Task.Status}] - {x.Project}")
+                    .ToArray();
+                listBox.Items.AddRange(recent);
+            }
 
-            // Clear and re-add Pie Chart
-            panelDashboard.Controls.OfType<Chart>().ToList()
-                .ForEach(c => panelDashboard.Controls.Remove(c));
-            CreatePieChartBox(panelDashboard, new Point(650, 240));
+            // === Update Pie Chart ===
+            var chart = panelDashboard.Controls.OfType<Chart>().FirstOrDefault();
+            if (chart != null)
+            {
+                chart.Series[0].Points.Clear();
+                var totalProjects = projects.Count;
+                var completedProjects = projects.Count(p => p.Tasks.Count > 0 && p.Tasks.All(t => t.Status == "Done"));
+                var incompleteProjects = totalProjects - completedProjects;
 
-            // Clear and re-add Progress Tracker
-            panelDashboard.Controls.OfType<Panel>()
-                .Where(p => p.Controls.OfType<Label>().Any(l => l.Text == "Progress Tracker"))
-                .ToList()
-                .ForEach(p => panelDashboard.Controls.Remove(p));
-            CreateProgressTracker(panelDashboard, new Point(30, 420));
+                if (totalProjects == 0)
+                {
+                    chart.Series[0].Points.AddXY("No Data", 1);
+                }
+                else
+                {
+                    chart.Series[0].Points.AddXY("Incomplete Projects", incompleteProjects);
+                    chart.Series[0].Points.AddXY("Completed Projects", completedProjects);
+                }
+            }
+
+            // === Update Progress Tracker ===
+            var progressPanel = panelDashboard.Controls
+                .OfType<Panel>()
+                .FirstOrDefault(p => p.Controls.OfType<Label>().Any(l => l.Text == "Progress Tracker"));
+            if (progressPanel != null)
+            {
+                progressPanel.Controls.Clear();
+                // Rebuild just the bars (cheap to do)
+                int yOffset = 40;
+                foreach (var project in projects.Where(p => p.Tasks.Any()))
+                {
+                    int total = project.Tasks.Count;
+                    int done = project.Tasks.Count(t => t.Status == "Done");
+                    int inProgress = project.Tasks.Count(t => t.Status == "In Progress");
+
+                    Label taskLabel = new Label
+                    {
+                        Text = $"{project.Name} ({done}/{total} tasks completed)",
+                        Location = new Point(10, yOffset - 20),
+                        AutoSize = true
+                    };
+                    progressPanel.Controls.Add(taskLabel);
+
+                    Panel bar = new Panel
+                    {
+                        Location = new Point(10, yOffset),
+                        Size = new Size(560, 20),
+                        BorderStyle = BorderStyle.FixedSingle
+                    };
+                    bar.Paint += (s, e) =>
+                    {
+                        Graphics g = e.Graphics;
+                        Rectangle bounds = bar.ClientRectangle;
+                        int greenWidth = (int)(bounds.Width * ((double)done / total));
+                        int orangeWidth = (int)(bounds.Width * ((double)inProgress / total));
+                        int remainingWidth = bounds.Width - greenWidth - orangeWidth;
+
+                        g.FillRectangle(Brushes.Green, 0, 0, greenWidth, bounds.Height);
+                        g.FillRectangle(Brushes.Orange, greenWidth, 0, orangeWidth, bounds.Height);
+                        g.FillRectangle(Brushes.LightGray, greenWidth + orangeWidth, 0, remainingWidth, bounds.Height);
+                    };
+                    progressPanel.Controls.Add(bar);
+
+                    yOffset += 50;
+                }
+            }
         }
+
 
         private void CreateSummaryBox(Control parent, string title, string value, Point location, out Label valueLabel)
         {
@@ -227,7 +295,7 @@ namespace TaskTimeTrackerApp
             if (deadlinesLabel == null) return;
 
             string deadlinesText = string.Join("\n", projects
-                .Where(p => p.Deadline != null)
+                .Where(p => p.Deadline != null && !p.IsCompleted) // exclude completed
                 .OrderBy(p => p.Deadline)
                 .Take(3)
                 .Select(p =>
@@ -239,6 +307,7 @@ namespace TaskTimeTrackerApp
                         : (done == total ? "✅ Completed" : $"{total - done} remaining");
                     return $"• {p.Name} - {p.Deadline?.ToShortDateString()} ({status})";
                 }));
+
 
             deadlinesLabel.Text = "Upcoming Deadlines:\n" + (string.IsNullOrEmpty(deadlinesText) ? "No deadlines." : deadlinesText);
             deadlinesLabel.Location = new Point(10, lblMotivationalQuote.Bottom + 10);

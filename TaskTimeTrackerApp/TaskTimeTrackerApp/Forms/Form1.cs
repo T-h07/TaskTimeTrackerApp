@@ -59,6 +59,16 @@ namespace TaskTimeTrackerApp
         {
             try
             {
+                foreach (var project in projects)
+                {
+                    // If tracking, finalize current session before saving
+                    if (project.IsTracking && project.StartTime.HasValue)
+                    {
+                        project.TimeTracked += DateTime.Now - project.StartTime.Value;
+                        project.StartTime = DateTime.Now; // keep tracking session active but synced
+                    }
+                }
+
                 var json = JsonConvert.SerializeObject(projects, Formatting.Indented);
                 File.WriteAllText(dataFilePath, json);
             }
@@ -75,7 +85,18 @@ namespace TaskTimeTrackerApp
                 if (File.Exists(dataFilePath))
                 {
                     string json = File.ReadAllText(dataFilePath);
-                    return JsonConvert.DeserializeObject<List<Project>>(json) ?? new List<Project>();
+                    var loadedProjects = JsonConvert.DeserializeObject<List<Project>>(json) ?? new List<Project>();
+
+                    foreach (var project in loadedProjects)
+                    {
+                        // If project was tracking, reset StartTime so new session continues fresh
+                        if (project.IsTracking)
+                        {
+                            project.StartTime = DateTime.Now;
+                        }
+                    }
+
+                    return loadedProjects;
                 }
             }
             catch (Exception ex)
@@ -85,6 +106,9 @@ namespace TaskTimeTrackerApp
 
             return new List<Project>();
         }
+
+
+
 
         private void Form1_Load(object sender, EventArgs e)
         {

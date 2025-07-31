@@ -192,8 +192,15 @@ namespace TaskTimeTrackerApp
         private void BtnAddTask_Click(object sender, EventArgs e)
         {
             var dialog = new InputDialog("New Task", "Enter task title:");
-            if (dialog.ShowDialog() == DialogResult.OK && !string.IsNullOrWhiteSpace(dialog.UserInput))
+            if (dialog.ShowDialog() == DialogResult.OK)
             {
+                string taskName = dialog.UserInput?.Trim();
+                if (string.IsNullOrWhiteSpace(taskName))
+                {
+                    MessageBox.Show("Task name cannot be empty.", "Invalid Task", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 var projectSelector = new Form
                 {
                     Text = "Select Project",
@@ -209,9 +216,18 @@ namespace TaskTimeTrackerApp
                     DropDownStyle = ComboBoxStyle.DropDownList
                 };
 
-                projectBox.Items.AddRange(projects.Select(p => p.Name).ToArray());
+                // Only show active (not completed) projects
+                projectBox.Items.AddRange(projects
+                    .Where(p => !p.IsCompleted)
+                    .Select(p => p.Name)
+                    .ToArray());
                 if (projectBox.Items.Count > 0)
                     projectBox.SelectedIndex = 0;
+                else
+                {
+                    MessageBox.Show("No active projects available. Create a new project first.", "No Projects", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
 
                 Button ok = new Button
                 {
@@ -231,10 +247,11 @@ namespace TaskTimeTrackerApp
                     {
                         selectedProject.Tasks.Add(new TaskItem
                         {
-                            Title = dialog.UserInput,
-                            Description = dialog.DescriptionInput
+                            Title = taskName,
+                            Description = dialog.DescriptionInput?.Trim()
                         });
 
+                        SaveProjectsToFile();
                         SetupProjectsPanel();
                         SetupTasksPanel();
                         UpdateDashboard();
@@ -242,6 +259,7 @@ namespace TaskTimeTrackerApp
                 }
             }
         }
+
     }
 }
 

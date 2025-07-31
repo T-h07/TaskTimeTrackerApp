@@ -12,6 +12,7 @@ namespace TaskTimeTrackerApp
         private ComboBox cmbSortHistory;
         private Panel panelCompletedProjects;
         private TextBox txtSearchHistory;
+        private Button btnDeleteAllHistory;
 
         private void SetupHistoryPanel()
         {
@@ -68,6 +69,30 @@ namespace TaskTimeTrackerApp
                 HistoryPanel.Controls.Add(txtSearchHistory);
             }
 
+            if (btnDeleteAllHistory == null)
+            {
+                btnDeleteAllHistory = new Button
+                {
+                    Text = "Delete All History",
+                    Location = new Point(leftMargin + 500, topMargin),
+                    Size = new Size(150, 30),
+                    BackColor = Color.Firebrick,
+                    ForeColor = Color.White
+                };
+                btnDeleteAllHistory.Click += (s, e) =>
+                {
+                    var confirm = MessageBox.Show("Are you sure you want to permanently delete all completed projects?", "Confirm Deletion", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                    if (confirm == DialogResult.Yes)
+                    {
+                        projects.RemoveAll(p => p.IsCompleted);
+                        SaveProjectsToFile();
+                        LoadHistoryProjects();
+                        UpdateDashboard();
+                    }
+                };
+                HistoryPanel.Controls.Add(btnDeleteAllHistory);
+            }
+
             if (panelCompletedProjects == null)
             {
                 panelCompletedProjects = new Panel
@@ -98,7 +123,6 @@ namespace TaskTimeTrackerApp
         private void LoadHistoryProjects(string searchTerm = "")
         {
             if (panelCompletedProjects == null) return;
-
             panelCompletedProjects.Controls.Clear();
 
             var completed = projects
@@ -134,7 +158,6 @@ namespace TaskTimeTrackerApp
             }
 
             int yOffset = 0;
-
             foreach (var project in completed)
             {
                 var card = new Panel
@@ -173,15 +196,35 @@ namespace TaskTimeTrackerApp
                         .Where(t => t.Status == "Done")
                         .Select(t => t.Title)),
                     Location = new Point(10, 100),
-                    MaximumSize = new Size(650, 0),
+                    MaximumSize = new Size(500, 0),
                     AutoSize = true
                 });
+
+                // Delete permanently button
+                Button btnDelete = new Button
+                {
+                    Text = "Delete Permanently",
+                    Location = new Point(530, 10),
+                    Size = new Size(130, 30),
+                    BackColor = Color.LightCoral
+                };
+                btnDelete.Click += (s, e) =>
+                {
+                    var confirm = MessageBox.Show($"Permanently delete '{project.Name}'?", "Confirm Deletion", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                    if (confirm == DialogResult.Yes)
+                    {
+                        projects.Remove(project);
+                        SaveProjectsToFile();
+                        LoadHistoryProjects(searchTerm);
+                        UpdateDashboard();
+                    }
+                };
+                card.Controls.Add(btnDelete);
 
                 panelCompletedProjects.Controls.Add(card);
                 yOffset += card.Height + 10;
             }
 
-            // Ensure scroll height is properly applied
             panelCompletedProjects.AutoScrollMinSize = new Size(0, yOffset);
         }
     }
