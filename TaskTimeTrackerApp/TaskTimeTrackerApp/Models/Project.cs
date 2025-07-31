@@ -12,6 +12,8 @@ namespace TaskTimeTrackerApp.Models
         public DateTime? Deadline { get; set; }
 
         public TimeSpan TimeTracked { get; set; } = TimeSpan.Zero;
+        public List<SessionLog> SessionHistory { get; set; } = new List<SessionLog>();
+
 
         public bool IsTracking { get; set; }
 
@@ -23,6 +25,8 @@ namespace TaskTimeTrackerApp.Models
         public string Status { get; set; } = "In Progress";
 
         public bool IsCompleted { get; set; } = false;
+
+
 
 
 

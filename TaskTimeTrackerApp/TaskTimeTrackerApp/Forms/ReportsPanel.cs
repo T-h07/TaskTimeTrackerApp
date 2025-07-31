@@ -14,6 +14,7 @@ namespace TaskTimeTrackerApp
     public partial class Form1 : Form
     {
         private ComboBox cmbReportProjects;
+        private ComboBox cmbDateRange;
         private RichTextBox txtProjectReportDesc;
         private Panel panelReportTaskBoxes;
         private Label lblReportTime;
@@ -21,10 +22,16 @@ namespace TaskTimeTrackerApp
         private ProgressBar reportProgressBar;
         private Button btnDownloadReport;
         private Chart chartReport;
+        private Chart chartSessionHistory;
+        private Chart chartWeeklyHistory;
+
 
         private void SetupReportsPanel()
         {
             panelReports.Controls.Clear();
+            panelReports.AutoScroll = true;
+            panelReports.VerticalScroll.Visible = true;
+            panelReports.Dock = DockStyle.Fill;
 
             Label lblHeader = new Label
             {
@@ -47,6 +54,17 @@ namespace TaskTimeTrackerApp
                 cmbReportProjects.SelectedIndex = 0;
             cmbReportProjects.SelectedIndexChanged += (s, e) => UpdateReportPanel();
             panelReports.Controls.Add(cmbReportProjects);
+
+            cmbDateRange = new ComboBox
+            {
+                Location = new Point(450, 60),
+                Size = new Size(140, 25),
+                DropDownStyle = ComboBoxStyle.DropDownList
+            };
+            cmbDateRange.Items.AddRange(new[] { "All Time", "Last 7 Days", "Last 30 Days" });
+            cmbDateRange.SelectedIndex = 0;
+            cmbDateRange.SelectedIndexChanged += (s, e) => UpdateReportPanel();
+            panelReports.Controls.Add(cmbDateRange);
 
             txtProjectReportDesc = new RichTextBox
             {
@@ -100,6 +118,28 @@ namespace TaskTimeTrackerApp
             chartReport.ChartAreas.Add(new ChartArea());
             panelReports.Controls.Add(chartReport);
 
+            chartSessionHistory = new Chart
+            {
+                Location = new Point(20, 860),
+                Size = new Size(700, 300),
+                BorderlineColor = Color.Gray,
+                BorderlineDashStyle = ChartDashStyle.Solid,
+                BorderlineWidth = 1
+            };
+            chartSessionHistory.ChartAreas.Add(new ChartArea());
+            panelReports.Controls.Add(chartSessionHistory);
+
+            chartWeeklyHistory = new Chart
+            {
+                Location = new Point(20, 1180),
+                Size = new Size(700, 300),
+                BorderlineColor = Color.Gray,
+                BorderlineDashStyle = ChartDashStyle.Solid,
+                BorderlineWidth = 1
+            };
+            chartWeeklyHistory.ChartAreas.Add(new ChartArea());
+            panelReports.Controls.Add(chartWeeklyHistory);
+
             btnDownloadReport = new Button
             {
                 Text = "Download PDF",
@@ -121,6 +161,10 @@ namespace TaskTimeTrackerApp
             chartReport.Series.Clear();
             chartReport.Titles.Clear();
             panelReportTaskBoxes.Controls.Clear();
+            chartSessionHistory.Series.Clear();
+            chartSessionHistory.Titles.Clear();
+            chartWeeklyHistory.Series.Clear();
+            chartWeeklyHistory.Titles.Clear();
 
             if (selectedProjectName == "All Projects")
             {
@@ -141,8 +185,8 @@ namespace TaskTimeTrackerApp
                 foreach (var proj in activeProjects.OrderByDescending(p => p.TimeTracked.TotalHours))
                 {
                     double value = proj.TimeTracked.TotalHours;
-                    var point = series.Points.AddXY(proj.Name, value);
-                    series.Points.Last().Label = $"{(int)proj.TimeTracked.TotalHours}h {proj.TimeTracked.Minutes}m";
+                    int pointIndex = series.Points.AddXY(proj.Name, value);
+                    series.Points[pointIndex].Label = $"{(int)proj.TimeTracked.TotalHours}h {proj.TimeTracked.Minutes}m";
                 }
 
                 chartReport.Series.Add(series);
@@ -164,6 +208,7 @@ namespace TaskTimeTrackerApp
                 int done = project.Tasks.Count(t => t.Status == "Done");
                 reportProgressBar.Value = total > 0 ? (int)(((double)done / total) * 100) : 0;
 
+                // Task list
                 int yOffset = 10;
                 foreach (var task in project.Tasks)
                 {
@@ -197,6 +242,7 @@ namespace TaskTimeTrackerApp
                     yOffset += 80;
                 }
 
+                // Task status chart
                 chartReport.Titles.Add("Task Status Breakdown");
                 Series series = new Series
                 {
@@ -205,20 +251,81 @@ namespace TaskTimeTrackerApp
                     Label = "#VALX (#VALY)",
                     LegendText = "#VALX"
                 };
-
-                int toDo = project.Tasks.Count(t => t.Status == "To Do");
-                int inProgress = project.Tasks.Count(t => t.Status == "In Progress");
-                int doneCount = project.Tasks.Count(t => t.Status == "Done");
-
-                series.Points.AddXY($"To Do ({toDo})", toDo);
-                series.Points.AddXY($"In Progress ({inProgress})", inProgress);
-                series.Points.AddXY($"Done ({doneCount})", doneCount);
-
+                series.Points.AddXY($"To Do ({project.Tasks.Count(t => t.Status == "To Do")})", project.Tasks.Count(t => t.Status == "To Do"));
+                series.Points.AddXY($"In Progress ({project.Tasks.Count(t => t.Status == "In Progress")})", project.Tasks.Count(t => t.Status == "In Progress"));
+                series.Points.AddXY($"Done ({project.Tasks.Count(t => t.Status == "Done")})", project.Tasks.Count(t => t.Status == "Done"));
                 chartReport.Series.Add(series);
+
+                // Filter sessions
+                var filteredSessions = project.SessionHistory.AsEnumerable();
+                if (cmbDateRange.SelectedItem.ToString() == "Last 7 Days")
+                    filteredSessions = filteredSessions.Where(s => s.Start >= DateTime.Now.AddDays(-7));
+                else if (cmbDateRange.SelectedItem.ToString() == "Last 30 Days")
+                    filteredSessions = filteredSessions.Where(s => s.Start >= DateTime.Now.AddDays(-30));
+
+                // Daily chart
+                var dailyStats = filteredSessions
+                    .GroupBy(s => s.Start.Date)
+                    .Select(g => new { Date = g.Key, Hours = g.Sum(s => s.Duration.TotalHours) })
+                    .OrderBy(g => g.Date)
+                    .ToList();
+
+                Series dailySeries = new Series
+                {
+                    ChartType = SeriesChartType.Column,
+                    IsValueShownAsLabel = true
+                };
+                foreach (var day in dailyStats)
+                {
+                    int idx = dailySeries.Points.AddXY(day.Date.ToShortDateString(), day.Hours);
+                    dailySeries.Points[idx].Label = FormatTimeSpan(TimeSpan.FromHours(day.Hours));
+                }
+                chartSessionHistory.Series.Add(dailySeries);
+                chartSessionHistory.Titles.Add("Daily Work Sessions");
+                chartSessionHistory.ChartAreas[0].AxisY.Title = "Hours Worked";
+                chartSessionHistory.ChartAreas[0].AxisX.Interval = 1;
+
+                // Weekly chart
+                // Get first session date for relative week calculation
+                var firstSessionDate = filteredSessions.Any() ? filteredSessions.Min(s => s.Start) : DateTime.Now;
+
+                var weeklyStats = filteredSessions
+                    .GroupBy(s => (int)((s.Start - firstSessionDate).TotalDays / 7) + 1) // Week 1 relative to first session
+                    .Select(g => new { Week = g.Key, Hours = g.Sum(s => s.Duration.TotalHours) })
+                    .OrderBy(g => g.Week)
+                    .ToList();
+
+
+                Series weeklySeries = new Series
+                {
+                    ChartType = SeriesChartType.Column,
+                    IsValueShownAsLabel = true
+                };
+                foreach (var week in weeklyStats)
+                {
+                    int idx = weeklySeries.Points.AddXY($"Week {week.Week}", week.Hours);
+                    weeklySeries.Points[idx].Label = FormatTimeSpan(TimeSpan.FromHours(week.Hours));
+                }
+                chartWeeklyHistory.Series.Add(weeklySeries);
+                chartWeeklyHistory.Titles.Add("Weekly Work Sessions");
+                chartWeeklyHistory.ChartAreas[0].AxisY.Title = "Hours Worked";
+                chartWeeklyHistory.ChartAreas[0].AxisX.Interval = 1;
             }
         }
 
-        // Save chart as image and embed into PDF
+        // Helper for formatted time
+        private string FormatTimeSpan(TimeSpan ts)
+        {
+            if (ts.TotalDays >= 1)
+                return $"{(int)ts.TotalDays}d {ts.Hours}h {ts.Minutes}m";
+            if (ts.TotalHours >= 1)
+                return $"{(int)ts.TotalHours}h {ts.Minutes}m";
+            if (ts.TotalMinutes >= 1)
+                return $"{ts.Minutes}m {ts.Seconds}s";
+            return $"{ts.Seconds}s";
+        }
+
+        // PDF chart export
         private void AddChartToPdf(PDF.Document doc, Chart chart)
         {
             using (MemoryStream ms = new MemoryStream())
@@ -229,22 +336,6 @@ namespace TaskTimeTrackerApp
                 chartImage.ScaleToFit(500f, 300f);
                 doc.Add(chartImage);
             }
-        }
-
-        // Create a time chart for PDF
-
-
-
-        // Helper method for clean time display
-        private string FormatTimeSpan(TimeSpan ts)
-        {
-            if (ts.TotalDays >= 1)
-                return $"{(int)ts.TotalDays}d {ts.Hours}h {ts.Minutes}m";
-            if (ts.TotalHours >= 1)
-                return $"{(int)ts.TotalHours}h {ts.Minutes}m";
-            if (ts.TotalMinutes >= 1)
-                return $"{ts.Minutes}m {ts.Seconds}s";
-            return $"{ts.Seconds}s";
         }
 
         private Chart CreateTimeChart(Project project)
@@ -259,10 +350,9 @@ namespace TaskTimeTrackerApp
                 IsValueShownAsLabel = true
             };
 
-            double value = project.TimeTracked.TotalHours; // Default in hours
+            double value = project.TimeTracked.TotalHours;
             string axisTitle = "Hours (decimal)";
 
-            // Adjust unit dynamically
             if (project.TimeTracked.TotalHours < 1)
             {
                 value = project.TimeTracked.TotalMinutes;
@@ -280,15 +370,12 @@ namespace TaskTimeTrackerApp
             chart.Series.Add(series);
             chart.Titles.Add("Project Time Spent");
 
-            // Axis formatting
             area.AxisY.Title = axisTitle;
             area.AxisY.LabelStyle.Format = "0";
             area.AxisX.LabelStyle.Angle = -15;
 
             return chart;
         }
-
-
 
         private void BtnDownloadReport_Click(object sender, EventArgs e)
         {
@@ -344,9 +431,18 @@ namespace TaskTimeTrackerApp
                                 doc.Add(new PDF.Paragraph($"- {task.Title} [{task.Status}] - {task.Description}", normalFont));
                             }
 
+                            // Add session history
+                            doc.Add(new PDF.Paragraph("\nSession History:", headingFont));
+                            foreach (var session in project.SessionHistory.OrderBy(s => s.Start))
+                            {
+                                string sessionLine = $"{session.Start:yyyy-MM-dd HH:mm} - {session.End:HH:mm} ({FormatTimeSpan(session.Duration)})";
+                                doc.Add(new PDF.Paragraph(sessionLine, normalFont));
+                            }
+
                             // Add charts to PDF
-                            AddChartToPdf(doc, chartReport); // Task breakdown pie chart
-                            AddChartToPdf(doc, CreateTimeChart(project)); // Time spent chart
+                            AddChartToPdf(doc, chartReport);
+                            AddChartToPdf(doc, CreateTimeChart(project));
+                            AddChartToPdf(doc, chartSessionHistory);
                         }
 
                         doc.Close();
@@ -356,6 +452,5 @@ namespace TaskTimeTrackerApp
                 }
             }
         }
-
     }
 }

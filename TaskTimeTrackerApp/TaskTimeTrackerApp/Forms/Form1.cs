@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using System.Windows.Forms.DataVisualization.Charting;
 using Newtonsoft.Json;
 using TaskTimeTrackerApp.Models;
 
@@ -13,6 +15,8 @@ namespace TaskTimeTrackerApp
     {
         private List<Project> projects = new List<Project>();
         private List<TaskItem> tasks = new List<TaskItem>();
+
+
 
         private string dataFilePath = "data.json";
         private readonly string dataFile = "projects.json";
@@ -186,6 +190,24 @@ namespace TaskTimeTrackerApp
             };
             panel.Controls.Add(lbl);
         }
+
+        // Other methods in Form1...
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            foreach (var project in projects.Where(p => p.IsTracking && p.StartTime.HasValue))
+            {
+                var end = DateTime.Now;
+                project.TimeTracked += end - project.StartTime.Value;
+                project.SessionHistory.Add(new SessionLog { Start = project.StartTime.Value, End = end });
+                project.IsTracking = false;
+                project.StartTime = null;
+            }
+            SaveProjectsToFile();
+            base.OnFormClosing(e);
+        }
+
+
 
 
         private void panelSidebar_Paint(object sender, PaintEventArgs e) { }

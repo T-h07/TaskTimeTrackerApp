@@ -115,16 +115,26 @@ namespace TaskTimeTrackerApp
                         // STOP
                         if (project.StartTime.HasValue)
                         {
-                            project.TimeTracked += DateTime.Now - project.StartTime.Value;
+                            var end = DateTime.Now;
+                            var duration = end - project.StartTime.Value;
+                            project.TimeTracked += duration;
+
+                            // Only log if longer than 30 seconds
+                            if (duration.TotalSeconds > 30)
+                            {
+                                project.SessionHistory.Add(new SessionLog
+                                {
+                                    Start = project.StartTime.Value,
+                                    End = end
+                                });
+                            }
                         }
                         project.IsTracking = false;
                         project.StartTime = null;
                         if (projectTimers.ContainsKey(project))
                             projectTimers[project].Stop();
-
-                        projectTimerLabels[project].Text = $"Time: {project.TimeTracked:hh\\:mm\\:ss}";
-                        btnStartStop.Text = "Start"; // <-- Update button text immediately
                     }
+
                     else
                     {
                         // START
@@ -147,12 +157,13 @@ namespace TaskTimeTrackerApp
                         projectTimers[project].Start();
 
                         projectTimerLabels[project].Text = $"Time: {project.TimeTracked:hh\\:mm\\:ss}";
-                        btnStartStop.Text = "Stop"; // <-- Update button text immediately
+                        btnStartStop.Text = "Stop";  // <-- Update text here
                     }
 
                     SaveProjectsToFile();
                     UpdateDashboard();
                 };
+
 
 
 

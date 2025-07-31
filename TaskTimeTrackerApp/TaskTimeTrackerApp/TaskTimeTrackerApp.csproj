@@ -125,6 +125,7 @@
     </Compile>
     <Compile Include="Models\PriorityLevel.cs" />
     <Compile Include="Models\Project.cs" />
+    <Compile Include="Models\SessionLog.cs" />
     <Compile Include="Models\TaskItem.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Forms\ProjectDialog.cs">
