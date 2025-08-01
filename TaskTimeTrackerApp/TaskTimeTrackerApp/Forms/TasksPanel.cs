@@ -133,27 +133,53 @@ namespace TaskTimeTrackerApp
             }
 
             int yOffset = 10;
+            int rowIndex = 0;
             foreach (var (project, task) in filteredTasks)
             {
+                // Create "card-like" panel
+                Panel taskCard = new Panel
+                {
+                    Location = new Point(10, yOffset),
+                    Size = new Size(panelTaskList.Width - 40, 70),
+                    BackColor = rowIndex % 2 == 0 ? Color.White : Color.FromArgb(245, 245, 245),
+                    BorderStyle = BorderStyle.FixedSingle
+                };
+
+                // Rounded corners
+                taskCard.Paint += (s, e) =>
+                {
+                    using (var brush = new SolidBrush(taskCard.BackColor))
+                    using (var pen = new Pen(Color.LightGray))
+                    {
+                        e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                        var rect = taskCard.ClientRectangle;
+                        int radius = 8;
+                        var path = new System.Drawing.Drawing2D.GraphicsPath();
+                        path.AddArc(rect.X, rect.Y, radius, radius, 180, 90);
+                        path.AddArc(rect.Right - radius, rect.Y, radius, radius, 270, 90);
+                        path.AddArc(rect.Right - radius, rect.Bottom - radius, radius, radius, 0, 90);
+                        path.AddArc(rect.X, rect.Bottom - radius, radius, radius, 90, 90);
+                        path.CloseAllFigures();
+                        e.Graphics.FillPath(brush, path);
+                        e.Graphics.DrawPath(pen, path);
+                    }
+                };
+
+                // Task title
                 Label lblTitle = new Label
                 {
                     Text = $"[{project.Name}] {task.Title}",
-                    Location = new Point(10, yOffset),
                     Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                    Location = new Point(10, 8),
+                    MaximumSize = new Size(taskCard.Width - 160, 0),
                     AutoSize = true
                 };
 
-                Label lblDesc = new Label
-                {
-                    Text = task.Description,
-                    Location = new Point(10, yOffset + 20),
-                    Font = new Font("Segoe UI", 9),
-                    AutoSize = true
-                };
-
+                // Status dropdown
                 ComboBox cmbStatus = new ComboBox
                 {
-                    Location = new Point(320, yOffset),
+                    Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                    Location = new Point(taskCard.Width - 150, 20),
                     Size = new Size(100, 25),
                     DropDownStyle = ComboBoxStyle.DropDownList
                 };
@@ -165,13 +191,17 @@ namespace TaskTimeTrackerApp
                     UpdateDashboard();
                 };
 
+                // Delete button
                 Button btnRemove = new Button
                 {
                     Text = "🗑️",
-                    Location = new Point(430, yOffset),
+                    Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                    Location = new Point(taskCard.Width - 45, 20), // 10px gap from right edge
                     Size = new Size(30, 25),
-                    BackColor = Color.LightCoral
+                    BackColor = Color.LightCoral,
+                    FlatStyle = FlatStyle.Flat
                 };
+                btnRemove.FlatAppearance.BorderSize = 0;
                 btnRemove.Click += (s, e) =>
                 {
                     project.Tasks.Remove(task);
@@ -180,14 +210,18 @@ namespace TaskTimeTrackerApp
                     UpdateDashboard();
                 };
 
-                panelTaskList.Controls.Add(lblTitle);
-                panelTaskList.Controls.Add(lblDesc);
-                panelTaskList.Controls.Add(cmbStatus);
-                panelTaskList.Controls.Add(btnRemove);
+                // Add controls
+                taskCard.Controls.Add(lblTitle);
+                taskCard.Controls.Add(cmbStatus);
+                taskCard.Controls.Add(btnRemove);
 
-                yOffset += 60;
+                panelTaskList.Controls.Add(taskCard);
+                yOffset += 80;
+                rowIndex++;
             }
         }
+
+
 
         private void BtnAddTask_Click(object sender, EventArgs e)
         {
